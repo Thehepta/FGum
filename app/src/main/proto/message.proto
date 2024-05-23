@@ -8,6 +8,7 @@ option java_package = "com.kone.pbdemo.protocol";
 
 service FridaService {
     rpc LoadJS (Filebuff) returns (Empty) {}
+    rpc streamMessages (StringArgument) returns (stream StringArgument);
 
 }
 

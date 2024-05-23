@@ -26,7 +26,6 @@ public class LoadEntry {
                             .maxInboundMessageSize(Integer.MAX_VALUE)
                             .build()
                             .start();
-                    fridaGpcServiceImp.setChannel(server);
                     Log.e("LoadEntry","server started, port : " + port);
                     server.awaitTermination();
                 } catch (IOException | InterruptedException e) {

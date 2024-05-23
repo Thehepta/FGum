@@ -4,6 +4,7 @@ import com.kone.pbdemo.protocol.Empty;
 import com.kone.pbdemo.protocol.Filebuff;
 import com.kone.pbdemo.protocol.FridaClientGrpc;
 import com.kone.pbdemo.protocol.FridaServiceGrpc;
+import com.kone.pbdemo.protocol.StringArgument;
 
 import io.grpc.Server;
 import io.grpc.stub.StreamObserver;
@@ -25,11 +26,15 @@ public class FridaGpcServiceImp extends FridaServiceGrpc.FridaServiceImplBase {
         responseObserver.onCompleted();
     }
 
+    @Override
+    public void streamMessages(StringArgument request, StreamObserver<StringArgument> responseObserver) {
+        // 构造消息对象并发送给客户端
+
+        responseObserver.onNext(request);
+    }
+
     public void sendlog(String log){
 
     }
 
-    public void setChannel(Server server) {
-//        iFridaGpcClient = FridaClientGrpc.newBlockingStub(server);
-    }
 }
