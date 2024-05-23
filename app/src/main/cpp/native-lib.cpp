@@ -118,14 +118,6 @@ Java_com_test_fgum_MainActivity_stringFromJNI(
 
 extern "C"
 JNIEXPORT jboolean JNICALL
-Java_com_test_fgum_MainActivity_loadJS(JNIEnv *env, jobject thiz, jstring jspath) {
-    const char *scriptpath = env->GetStringUTFChars(jspath, 0);
-    bool status = gumjsHook(scriptpath);
-    env->ReleaseStringUTFChars(jspath, scriptpath);
-    return status;
-}
-extern "C"
-JNIEXPORT jboolean JNICALL
 Java_com_test_fgum_FridaGpcServiceImp_loadbuff(JNIEnv *env, jobject thiz, jbyteArray js_buff) {
     // TODO: implement loadbuff()
     jsize length = env->GetArrayLength(js_buff);
@@ -134,5 +126,5 @@ Java_com_test_fgum_FridaGpcServiceImp_loadbuff(JNIEnv *env, jobject thiz, jbyteA
         return false;
     }
     gumjsHook(buffer);
-
+    return true;
 }

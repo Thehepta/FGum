@@ -9,7 +9,6 @@
 
 static void on_message( const gchar *message, GBytes *data, gpointer user_data);
 
-int gumjsHook(const char *scriptpath);
-
+int gumjsHook(jbyte* buffer);
 
 #endif //FGUM_NATIVE_LIB_H

@@ -18,7 +18,7 @@ service FridaClient {
 
 
 message StringArgument {
-    string className = 1;
+    string data = 1;
 }
 
 message Filebuff {

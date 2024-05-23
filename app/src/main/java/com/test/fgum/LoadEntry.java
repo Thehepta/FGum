@@ -16,14 +16,17 @@ public class LoadEntry {
             @Override
             public void run() {
                 int port = 9091;
+
                 Server server = null;
                 try {
+                    FridaGpcServiceImp fridaGpcServiceImp = new FridaGpcServiceImp();
                     server = NettyServerBuilder
                             .forPort(port)
-                            .addService(new FridaGpcServiceImp())
+                            .addService(fridaGpcServiceImp)
                             .maxInboundMessageSize(Integer.MAX_VALUE)
                             .build()
                             .start();
+                    fridaGpcServiceImp.setChannel(server);
                     Log.e("LoadEntry","server started, port : " + port);
                     server.awaitTermination();
                 } catch (IOException | InterruptedException e) {

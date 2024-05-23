@@ -2,8 +2,10 @@ package com.test.fgum;
 
 import com.kone.pbdemo.protocol.Empty;
 import com.kone.pbdemo.protocol.Filebuff;
+import com.kone.pbdemo.protocol.FridaClientGrpc;
 import com.kone.pbdemo.protocol.FridaServiceGrpc;
 
+import io.grpc.Server;
 import io.grpc.stub.StreamObserver;
 
 public class FridaGpcServiceImp extends FridaServiceGrpc.FridaServiceImplBase {
@@ -21,5 +23,13 @@ public class FridaGpcServiceImp extends FridaServiceGrpc.FridaServiceImplBase {
         Empty empty = Empty.newBuilder().build();
         responseObserver.onNext(empty);
         responseObserver.onCompleted();
+    }
+
+    public void sendlog(String log){
+
+    }
+
+    public void setChannel(Server server) {
+//        iFridaGpcClient = FridaClientGrpc.newBlockingStub(server);
     }
 }
