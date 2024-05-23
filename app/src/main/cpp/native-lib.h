@@ -11,8 +11,5 @@ static void on_message( const gchar *message, GBytes *data, gpointer user_data);
 
 int gumjsHook(const char *scriptpath);
 
-char *readfile(const char *filepath);
-
-int hookFunc(const char *scriptpath);
 
 #endif //FGUM_NATIVE_LIB_H

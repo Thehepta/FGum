@@ -41,16 +41,13 @@ char *readfile(const char *filepath) {
     return (char *) buffer;
 }
 
-int hookFunc(const char *scriptpath) {
+int hookFunc(jbyte* buffer) {
     LOGD ("[*] gumjsHook()");
     gum_init_embedded();
     backend = gum_script_backend_obtain_qjs();
-    char *js = readfile(scriptpath);
-    if (!js) {
-        return 1;
-    }
 
-    script = gum_script_backend_create_sync(backend, "example", js, NULL, cancellable, &error);
+
+    script = gum_script_backend_create_sync(backend, "example", (char *)buffer, NULL, cancellable, &error);
     g_assert (error == NULL);
     gum_script_set_message_handler(script, on_message, NULL, NULL);
     gum_script_load_sync(script, cancellable);
@@ -69,10 +66,10 @@ int hookFunc(const char *scriptpath) {
     return 0;
 }
 
-int gumjsHook(const char *scriptpath) {
+int gumjsHook(jbyte* buffer) {
     pthread_t pthread;
     int result = pthread_create(&pthread, NULL, (void *(*)(void *)) (hookFunc),
-                                (void *) scriptpath);
+                                (void *) buffer);
     struct timeval now;
     struct timespec outtime;
     pthread_mutex_lock(&mtx);
@@ -126,4 +123,16 @@ Java_com_test_fgum_MainActivity_loadJS(JNIEnv *env, jobject thiz, jstring jspath
     bool status = gumjsHook(scriptpath);
     env->ReleaseStringUTFChars(jspath, scriptpath);
     return status;
+}
+extern "C"
+JNIEXPORT jboolean JNICALL
+Java_com_test_fgum_FridaGpcServiceImp_loadbuff(JNIEnv *env, jobject thiz, jbyteArray js_buff) {
+    // TODO: implement loadbuff()
+    jsize length = env->GetArrayLength(js_buff);
+    jbyte* buffer = env->GetByteArrayElements(js_buff, NULL);
+    if (buffer == NULL) {
+        return false;
+    }
+    gumjsHook(buffer);
+
 }

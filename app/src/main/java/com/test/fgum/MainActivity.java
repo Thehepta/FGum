@@ -16,9 +16,7 @@ import java.io.InputStream;
 public class MainActivity extends AppCompatActivity {
 
     // Used to load the 'fgum' library on application startup.
-    static {
-        System.loadLibrary("fgum");
-    }
+
 
     private ActivityMainBinding binding;
     static public MainActivity INSTANCE;
@@ -34,7 +32,7 @@ public class MainActivity extends AppCompatActivity {
         // Example of a call to a native method
         TextView tv = binding.sampleText;
         tv.setMovementMethod(ScrollingMovementMethod.getInstance());
-        tv.setText(stringFromJNI());
+        tv.setText("test");
     }
 
     static public void update_text(String msg) {
@@ -66,14 +64,14 @@ public class MainActivity extends AppCompatActivity {
         is.close();
         fos.close();
 
-        loadJS(jsPath);
+//        loadJS(jsPath);
     }
 
     /**
      * A native method that is implemented by the 'fgum' native library,
      * which is packaged with this application.
      */
-    public native String stringFromJNI();
+//    public native String stringFromJNI();
 
-    public native boolean loadJS(String jspath);
+//    public native boolean loadJS(String jspath);
 }
