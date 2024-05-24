@@ -90,6 +90,7 @@ int hookFunc(jbyte* buffer) {
     return 0;
 }
 
+
 int gumjsHook(jbyte* buffer) {
     pthread_t pthread;
 
@@ -118,7 +119,6 @@ static void on_message(const gchar *message, GBytes *data, gpointer user_data) {
     parser = json_parser_new();
     json_parser_load_from_data(parser, message, -1, NULL);
     root = json_node_get_object(json_parser_get_root(parser));
-    std::lock_guard<std::mutex> lock(logmtx);
 
     type = json_object_get_string_member(root, "type");
     if (strcmp(type, "log") == 0) {
@@ -132,7 +132,6 @@ static void on_message(const gchar *message, GBytes *data, gpointer user_data) {
         LOGD ("[*] %s ", message);
 //        sharedMemory=sharedMemory+message;
     }
-    cv.notify_one(); // 通知等待的消费者线程
 
     g_object_unref(parser);
 }
@@ -149,26 +148,69 @@ JNIEXPORT jboolean JNICALL loadbuff(JNIEnv *env, jclass thiz, jbyteArray js_buff
     return true;
 }
 #include <future>
+JNIEXPORT void JNICALL test(JNIEnv *env, jclass thiz,jbyteArray js_buff) {
+    int length = env->GetArrayLength(js_buff);
+    jbyte* buffer = env->GetByteArrayElements(js_buff, NULL);
+    env->ReleaseByteArrayElements(js_buff, buffer, 0);
+    GError * err = NULL;
+
+    if (script != NULL)
+    {
+        gum_script_unload_sync (script, NULL);
+        g_object_unref (script);
+        script = NULL;
+    }
+
+    script = gum_script_backend_create_sync (backend,
+                                             "testcase", reinterpret_cast<const gchar *>(buffer), NULL, NULL, &err);
+    if (err != NULL)
+        g_printerr ("%s\n", err->message);
+    g_assert_nonnull (script);
+    g_assert_null (err);
+
+//    g_free (buffer);
+
+    gum_script_set_message_handler (script,
+                                    on_message, nullptr, NULL);
+
+    gum_script_load_sync (script, NULL);
+
+}
+
+int frida(jbyte* buffer) {
+    LOGD ("[*] frida entry");
+    gum_init_embedded();
+    backend = gum_script_backend_obtain_qjs();
+
+
+    context = g_main_context_get_thread_default();
+    while (g_main_context_pending(context))
+        g_main_context_iteration(context, FALSE);
+
+    loop = g_main_loop_new(g_main_context_get_thread_default(), FALSE);
+    g_main_loop_run(loop);//block here
+    LOGE("frida end");    //会在前面个阻塞住，这个线程不会退出
+    return 0;
+}
 
 JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
     JNIEnv* env;
     if (vm->GetEnv( (void**) &env, JNI_VERSION_1_6) != JNI_OK) {
         return -1;
     }
-    pthread_t pthread;
     g_vm = vm;
     jclass LoadEntry = env->FindClass("com/test/fgum/LoadEntry");
     JNINativeMethod methods[]= {
             {"loadbuff", "([B)Z",(void*) loadbuff},
+            {"test", "([B)V",(void*) test},
     };
     env->RegisterNatives(LoadEntry, methods, sizeof(methods)/sizeof(JNINativeMethod));
     jmethodID jsendlog = env->GetStaticMethodID(LoadEntry,"sendlog", "(Ljava/lang/String;)Z");
     LOGE("BEFORE");
     // 使用 lambda 表达式捕获参数并作为线程函数
-//    std::thread t([LoadEntry, jsendlog]() { logFunc(LoadEntry, jsendlog); });
-//    t.detach();
-    LOGE("REWRWEREWER");
+    pthread_t pthread;
 
+    pthread_create(&pthread, NULL, (void *(*)(void *)) (frida),(void *) nullptr);
+    pthread_detach(pthread);
     return JNI_VERSION_1_6;
 }
-

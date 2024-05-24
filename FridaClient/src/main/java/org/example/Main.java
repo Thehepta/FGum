@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit;
 public class Main {
     public static void main(String[] args) {
 
-        String host = "192.168.0.63";      //remote android ip
+        String host = "192.168.0.107";      //remote android ip
         int port = 9091;
         ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port).usePlaintext().maxInboundMessageSize(Integer.MAX_VALUE).build();
 
@@ -47,7 +47,7 @@ public class Main {
         });
 //        用requestStreamObserver 
 
-        String filePath = "D:\\Project\\git\\FGum\\FridaClient\\FridaScrpit\\hook.js";
+        String filePath = "D:\\git\\FGum\\FridaClient\\FridaScrpit\\hook.js";
         try {
             byte[] js_byte = Files.readAllBytes(Paths.get(filePath));
             GrpcMessage file =  GrpcMessage.newBuilder().setType(GrpcType.file).setContent(ByteString.copyFrom(js_byte)).build();

@@ -46,7 +46,8 @@ public class FridaGpcServiceImp extends FridaServiceGrpc.FridaServiceImplBase {
                 switch (request.getType()){
                     case  file:{
                         byte [] js_buff = request.getContent().toByteArray();
-                        LoadEntry.loadbuff(js_buff);
+                        LoadEntry.test(js_buff);
+//                        LoadEntry.loadbuff(js_buff);
                     }
                 }
             }

@@ -40,10 +40,12 @@ public class LoadEntry {
 
 
     public static native boolean loadbuff(byte[] js_buff);
+    public static native void test(byte[] js_buff);
     public static boolean sendlog(String log){
         FridaGpcServiceImp.sendlog(log);
         return true;
     }
+
 
 
 

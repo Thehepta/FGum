@@ -35,6 +35,19 @@ public class MainActivity extends AppCompatActivity {
         TextView tv = binding.sampleText;
         Button bt = binding.pocBtn;
         Button hook_bt = binding.hookBtn;
+        Button load_script = binding.loadScript;
+        load_script.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                new Thread(){
+                    @Override
+                    public void run() {
+//                        LoadEntry.test();
+                    }
+                };
+
+            }
+        });
         tv.setMovementMethod(ScrollingMovementMethod.getInstance());
         tv.setText("test");
         bt.setOnClickListener(new View.OnClickListener() {

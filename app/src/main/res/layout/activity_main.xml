@@ -35,13 +35,18 @@
                 android:layout_gravity="center"
                 android:text="startfrida" />
             <Button
+                android:id="@+id/load_script"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="loadscript" />
+
+            <Button
                 android:id="@+id/hook_btn"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="hooktest" />
-
-
         </GridLayout>
 
     </LinearLayout>
