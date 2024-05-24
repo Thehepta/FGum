@@ -5,10 +5,16 @@ option go_package = "protocol";
 option java_multiple_files = true;
 option java_package = "com.kone.pbdemo.protocol";
 
+enum GrpcType {
+    log = 0;
+    file = 1;
+    cmd = 2;
+    unknow = 3;
+}
 
 service FridaService {
     rpc LoadJS (Filebuff) returns (Empty) {}
-    rpc streamMessages (StringArgument) returns (stream StringArgument);
+    rpc Subscribe(stream GrpcMessage) returns (stream GrpcMessage);
 
 }
 
@@ -22,11 +28,19 @@ message StringArgument {
     string data = 1;
 }
 
+message GrpcMessage {
+    GrpcType type = 1;
+    bytes Content = 2;
+}
+
 message Filebuff {
     bytes Content = 1;
 }
-
-
+//
+//// The push response message
+//message PushResponse {
+//    string message = 1;
+//}
 
 message Empty {}
 

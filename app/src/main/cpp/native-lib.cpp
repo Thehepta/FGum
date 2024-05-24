@@ -4,6 +4,10 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/stat.h>
+#include <mutex>
+#include <thread>
+#include <condition_variable>
+#include <chrono>
 
 #include "logging.h"
 #include "native-lib.h"
@@ -16,6 +20,12 @@ static GError *error = NULL;
 static GumScript *script;
 static GMainContext *context;
 static GMainLoop *loop;
+
+// 共享内存数据结构
+std::string sharedMemory;
+std::mutex logmtx;
+std::condition_variable cv;
+JavaVM* g_vm = nullptr;
 
 char *readfile(const char *filepath) {
     FILE *file = fopen(filepath, "r");
@@ -40,7 +50,21 @@ char *readfile(const char *filepath) {
     }
     return (char *) buffer;
 }
+void logFunc(jclass LoadEntry,jmethodID jsendlog) {
+    JNIEnv* env;
 
+    if(g_vm->AttachCurrentThread(&env, nullptr)==0){
+        while (true){
+            std::unique_lock<std::mutex> lock(logmtx);
+            cv.wait(lock, []{ return !sharedMemory.empty() ; });
+            if (!sharedMemory.empty()) {
+                jstring log = env->NewStringUTF(sharedMemory.c_str());
+                env->CallStaticBooleanMethod(LoadEntry,jsendlog,log);
+                sharedMemory.clear();
+            }
+        }
+    }
+}
 int hookFunc(jbyte* buffer) {
     LOGD ("[*] gumjsHook()");
     gum_init_embedded();
@@ -68,8 +92,8 @@ int hookFunc(jbyte* buffer) {
 
 int gumjsHook(jbyte* buffer) {
     pthread_t pthread;
-    int result = pthread_create(&pthread, NULL, (void *(*)(void *)) (hookFunc),
-                                (void *) buffer);
+
+    int result = pthread_create(&pthread, NULL, (void *(*)(void *)) (hookFunc),(void *) buffer);
     struct timeval now;
     struct timespec outtime;
     pthread_mutex_lock(&mtx);
@@ -86,8 +110,7 @@ int gumjsHook(jbyte* buffer) {
     return result;
 }
 
-static void
-on_message(const gchar *message, GBytes *data, gpointer user_data) {
+static void on_message(const gchar *message, GBytes *data, gpointer user_data) {
     JsonParser *parser;
     JsonObject *root;
     const gchar *type;
@@ -95,32 +118,29 @@ on_message(const gchar *message, GBytes *data, gpointer user_data) {
     parser = json_parser_new();
     json_parser_load_from_data(parser, message, -1, NULL);
     root = json_node_get_object(json_parser_get_root(parser));
+    std::lock_guard<std::mutex> lock(logmtx);
 
     type = json_object_get_string_member(root, "type");
     if (strcmp(type, "log") == 0) {
         const gchar *log_message;
         log_message = json_object_get_string_member(root, "payload");
+
         LOGD ("[*] log : %s ", log_message);
+//        sharedMemory=sharedMemory+log_message;
+
     } else {
         LOGD ("[*] %s ", message);
+//        sharedMemory=sharedMemory+message;
     }
+    cv.notify_one(); // 通知等待的消费者线程
 
     g_object_unref(parser);
 }
 
-extern "C" JNIEXPORT jstring JNICALL
-Java_com_test_fgum_MainActivity_stringFromJNI(
-        JNIEnv* env,
-        jobject /* this */) {
-    std::string hello = "Hello from C++";
-    return env->NewStringUTF(hello.c_str());
-}
 
 extern "C"
-JNIEXPORT jboolean JNICALL
-Java_com_test_fgum_FridaGpcServiceImp_loadbuff(JNIEnv *env, jobject thiz, jbyteArray js_buff) {
+JNIEXPORT jboolean JNICALL loadbuff(JNIEnv *env, jclass thiz, jbyteArray js_buff) {
     // TODO: implement loadbuff()
-    jsize length = env->GetArrayLength(js_buff);
     jbyte* buffer = env->GetByteArrayElements(js_buff, NULL);
     if (buffer == NULL) {
         return false;
@@ -128,3 +148,27 @@ Java_com_test_fgum_FridaGpcServiceImp_loadbuff(JNIEnv *env, jobject thiz, jbyteA
     gumjsHook(buffer);
     return true;
 }
+#include <future>
+
+JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
+    JNIEnv* env;
+    if (vm->GetEnv( (void**) &env, JNI_VERSION_1_6) != JNI_OK) {
+        return -1;
+    }
+    pthread_t pthread;
+    g_vm = vm;
+    jclass LoadEntry = env->FindClass("com/test/fgum/LoadEntry");
+    JNINativeMethod methods[]= {
+            {"loadbuff", "([B)Z",(void*) loadbuff},
+    };
+    env->RegisterNatives(LoadEntry, methods, sizeof(methods)/sizeof(JNINativeMethod));
+    jmethodID jsendlog = env->GetStaticMethodID(LoadEntry,"sendlog", "(Ljava/lang/String;)Z");
+    LOGE("BEFORE");
+    // 使用 lambda 表达式捕获参数并作为线程函数
+//    std::thread t([LoadEntry, jsendlog]() { logFunc(LoadEntry, jsendlog); });
+//    t.detach();
+    LOGE("REWRWEREWER");
+
+    return JNI_VERSION_1_6;
+}
+

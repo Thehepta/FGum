@@ -10,19 +10,17 @@ import io.grpc.netty.NettyServerBuilder;
 
 public class LoadEntry {
 
-
+    static FridaGpcServiceImp fridaGpcServiceImp;
     public static void Entry(Context context, String source, String argument){
         new Thread(){
             @Override
             public void run() {
                 int port = 9091;
-
                 Server server = null;
                 try {
-                    FridaGpcServiceImp fridaGpcServiceImp = new FridaGpcServiceImp();
                     server = NettyServerBuilder
                             .forPort(port)
-                            .addService(fridaGpcServiceImp)
+                            .addService(new FridaGpcServiceImp())
                             .maxInboundMessageSize(Integer.MAX_VALUE)
                             .build()
                             .start();
@@ -35,5 +33,19 @@ public class LoadEntry {
         }.start();
 
     }
+
+    static {
+        System.loadLibrary("fgum");
+    }
+
+
+    public static native boolean loadbuff(byte[] js_buff);
+    public static boolean sendlog(String log){
+        FridaGpcServiceImp.sendlog(log);
+        return true;
+    }
+
+
+
 
 }

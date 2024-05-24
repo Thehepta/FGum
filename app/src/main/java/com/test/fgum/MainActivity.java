@@ -4,7 +4,9 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
 import android.text.method.ScrollingMovementMethod;
+import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 import com.test.fgum.databinding.ActivityMainBinding;
@@ -31,8 +33,22 @@ public class MainActivity extends AppCompatActivity {
 
         // Example of a call to a native method
         TextView tv = binding.sampleText;
+        Button bt = binding.pocBtn;
+        Button hook_bt = binding.hookBtn;
         tv.setMovementMethod(ScrollingMovementMethod.getInstance());
         tv.setText("test");
+        bt.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                LoadEntry.Entry(getApplicationContext(),"","");
+            }
+        });
+        hook_bt.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.e("Rzx","231321312");
+            }
+        });
     }
 
     static public void update_text(String msg) {
