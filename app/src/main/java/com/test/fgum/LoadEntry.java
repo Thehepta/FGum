@@ -4,6 +4,7 @@ import android.content.Context;
 import android.util.Log;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 import io.grpc.Server;
 import io.grpc.netty.NettyServerBuilder;
@@ -36,13 +37,17 @@ public class LoadEntry {
 
     static {
         System.loadLibrary("fgum");
+
     }
 
 
-    public static native boolean loadbuff(byte[] js_buff);
-    public static native void test(byte[] js_buff);
+    public static native void loadScript(byte[] js_buff);
+    public native void startWritingThread();
+    public static native void StartFridaThread();
+
+
     public static boolean sendlog(String log){
-        FridaGpcServiceImp.sendlog(log);
+//        FridaGpcServiceImp.sendlog(log);
         return true;
     }
 

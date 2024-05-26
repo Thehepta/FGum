@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit;
 public class Main {
     public static void main(String[] args) {
 
-        String host = "192.168.0.107";      //remote android ip
+        String host = "192.168.0.102";      //remote android ip
         int port = 9091;
         ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port).usePlaintext().maxInboundMessageSize(Integer.MAX_VALUE).build();
 
