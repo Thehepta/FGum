@@ -29,7 +29,7 @@ public class Main {
             public void onNext(GrpcMessage response) {
                 switch (response.getType()){
                     case  log:{
-                        String log = response.getContent().toString();
+                        String log = response.getContent().toStringUtf8()+"\n";
                         System.out.print(log);
                     }
                 }

@@ -29,7 +29,14 @@ public class FridaGpcServiceImp extends FridaServiceGrpc.FridaServiceImplBase {
         responseObserver.onCompleted();
     }
     public FridaGpcServiceImp(){
-        Log.e("rzx","FridaGpcServiceImp");
+        new Thread(){
+            @Override
+            public void run() {
+                Log.e("rzx","StartFridaThread");
+
+                LoadEntry.startWritingThread();
+            }
+        }.start();
     }
 
     @Override
@@ -54,6 +61,8 @@ public class FridaGpcServiceImp extends FridaServiceGrpc.FridaServiceImplBase {
             public void onError(Throwable t) {
                 // 处理流出现错误的情况
                 System.err.println("Error from client: " + t.getMessage());
+                pushResponseStreamObserver = null;
+
             }
 
             @Override
@@ -66,47 +75,18 @@ public class FridaGpcServiceImp extends FridaServiceGrpc.FridaServiceImplBase {
 
     }
 
-    private static ByteBuffer buffer;
-
-    private synchronized void notifyWritingThread() {
-        buffer.notify();
-    }
-
-    private   void stopReadingThread(){
-        stopReading = true;
-    }
-
-    public  void startReadingThread(){
-        new Thread(){
-            @Override
-            public void run() {
-                stopReading = false;
-                while (!stopReading) {
-                    synchronized (buffer) {
-                        byte[] data = new byte[buffer.remaining()];
-                        buffer.get(data);
-                        buffer.clear();
-                        String message = new String(data).trim();
-                        System.out.println("Message from C++: " + message);
-                        notifyWritingThread();
-                    }
-                    try {
-                        Thread.sleep(100);  // Sleep for 100ms
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        }.start();
-    }
 
     public static void sendlog(String log){
 
-        if(pushResponseStreamObserver == null){
-            return;
-        }
-        GrpcMessage response = GrpcMessage.newBuilder().setContent(ByteString.copyFromUtf8(log)).setType(GrpcType.log).build();
-        pushResponseStreamObserver.onNext(response);
+        try {
+            if(pushResponseStreamObserver == null){
+                return;
+            }
+            GrpcMessage response = GrpcMessage.newBuilder().setContent(ByteString.copyFromUtf8(log)).setType(GrpcType.log).build();
+            pushResponseStreamObserver.onNext(response);
 
+        }catch (Exception e){
+            Log.i("sendlog","sendlog exception");
+        }
     }
 }

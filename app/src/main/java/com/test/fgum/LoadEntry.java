@@ -42,12 +42,12 @@ public class LoadEntry {
 
 
     public static native void loadScript(byte[] js_buff);
-    public native void startWritingThread();
+    public static native void startWritingThread();
     public static native void StartFridaThread();
 
 
     public static boolean sendlog(String log){
-//        FridaGpcServiceImp.sendlog(log);
+        FridaGpcServiceImp.sendlog(log);
         return true;
     }
 

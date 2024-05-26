@@ -24,34 +24,7 @@ static GMainLoop *loop;
 
 
 ThreadSafeQueue threadSafeQueue;
-size_t bufferSize;
 JavaVM* g_vm;
-int sendlogThread(const char* buffer) {
-    JNIEnv *env = nullptr;
-
-    if(g_vm->AttachCurrentThread(&env, nullptr) != 0){
-        LOGD ("[*]sendlogThread Failed");
-        return -1;
-    }
-    std::string   msg;
-    while (true){
-        bool empty = threadSafeQueue.try_dequeue(msg);
-        if(empty){
-            jclass LoadEntry = env->FindClass("com/test/fgum/LoadEntry");
-            jmethodID jsendlog = env->GetStaticMethodID(LoadEntry,"sendlog", "(Ljava/lang/String;)Z");
-            jstring jmsg = env->NewStringUTF(msg.c_str());
-            env->CallStaticBooleanMethod(LoadEntry,jsendlog,jmsg);
-        }
-    }
-    return 0;
-}
-
-static void sendmsg(int8_t* buffer){
-    pthread_t pthread;
-    pthread_create(&pthread, NULL, (void *(*)(void *)) (sendlogThread),(void *) buffer);
-    pthread_detach(pthread);
-}
-
 
 static void on_message(const gchar *message, GBytes *data, gpointer user_data) {
 
@@ -66,10 +39,10 @@ static void on_message(const gchar *message, GBytes *data, gpointer user_data) {
     if (strcmp(type, "log") == 0) {
         const gchar *log_message;
         log_message = json_object_get_string_member(root, "payload");
-//        threadSafeQueue.enqueue(log_message);
+        threadSafeQueue.enqueue(log_message);
         LOGD ("[*] log : %s ", log_message);
     } else {
-//        threadSafeQueue.enqueue(message);
+        threadSafeQueue.enqueue(message);
         LOGD ("[*] %s ", message);
 
     }
@@ -81,9 +54,7 @@ static void on_message(const gchar *message, GBytes *data, gpointer user_data) {
 extern "C"
 JNIEXPORT void JNICALL loadScript(JNIEnv *env, jclass thiz, jbyteArray js_buff) {
     // TODO: implement loadbuff()
-    int length = env->GetArrayLength(js_buff);
-    gchar* js_buffer = static_cast<gchar *>(malloc(length));
-    env->GetByteArrayRegion(js_buff, 0, length, reinterpret_cast<jbyte *>(js_buffer));
+    jbyte* buffer = env->GetByteArrayElements(js_buff, NULL);
     GError * err = NULL;
 
     if (script != NULL)
@@ -94,30 +65,34 @@ JNIEXPORT void JNICALL loadScript(JNIEnv *env, jclass thiz, jbyteArray js_buff) 
     }
 
     script = gum_script_backend_create_sync (backend,
-                                             "testcase", reinterpret_cast<const gchar *>(js_buff), NULL, NULL, &err);
+                                             "testcase", reinterpret_cast<const gchar *>(buffer), NULL, NULL, &err);
     if (err != NULL)
         g_printerr ("%s\n", err->message);
     g_assert_nonnull (script);
     g_assert_null (err);
 
-    free (js_buff);
     gum_script_set_message_handler (script,on_message, nullptr, NULL);
     gum_script_load_sync (script, NULL);
+    env->ReleaseByteArrayElements(js_buff, buffer, 0);
+
 }
 #include <future>
 
 extern "C" JNIEXPORT
-void JNICALL frida_log(JNIEnv *env , jobject thiz) {
+void JNICALL frida_log(JNIEnv *env , jclass thiz) {
 
-//    const char *message = "Hello from C++";
-//    while (!finished) {
-//        std::unique_lock<std::mutex> lock(mtx);
-//        std::memcpy(buffer, message, std::min(bufferSize, strlen(message) + 1));
-//        ready = true;
-//        cv.notify_one();
-//        cv.wait(lock, [] { return !ready; });
-//        usleep(100000);  // Sleep for 100ms
-//    }
+    jclass LoadEntry = env->FindClass("com/test/fgum/LoadEntry");
+    jmethodID jsendlog = env->GetStaticMethodID(LoadEntry,"sendlog", "(Ljava/lang/String;)Z");
+    std::string   msg;
+    while (true){
+        bool empty = threadSafeQueue.try_dequeue(msg);
+        if(empty){
+            jstring jmsg = env->NewStringUTF(msg.c_str());
+            env->CallStaticBooleanMethod(LoadEntry,jsendlog,jmsg);
+        } else{
+
+        }
+    }
 }
 
 
@@ -169,13 +144,10 @@ JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
     };
     env->RegisterNatives(LoadEntry, methods, sizeof(methods)/sizeof(JNINativeMethod));
 
-
     pthread_t pthread_frida;
     pthread_create(&pthread_frida, NULL, (void *(*)(void *)) (frida),(void *) nullptr);
     pthread_detach(pthread_frida);
-//    pthread_t pthread_log;
-//    pthread_create(&pthread_log, NULL, (void *(*)(void *)) (sendmsg),(void *) nullptr);
-//    pthread_detach(pthread_log);
+
 
     return JNI_VERSION_1_6;
 }
