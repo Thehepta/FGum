@@ -15,8 +15,8 @@ import java.util.concurrent.TimeUnit;
 public class Main {
     public static void main(String[] args) {
 
-        String host = "192.168.0.107";      //remote android ip
-        int port = 9091;
+        String host = "192.168.0.100";      //remote android ip
+        int port = 9093;
         ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port).usePlaintext().maxInboundMessageSize(Integer.MAX_VALUE).build();
 
         FridaServiceGrpc.FridaServiceBlockingStub iServerInface = FridaServiceGrpc.newBlockingStub(channel);
@@ -29,7 +29,7 @@ public class Main {
             public void onNext(GrpcMessage response) {
                 switch (response.getType()){
                     case  log:{
-                        String log = response.getContent().toString();
+                        String log = response.getContent().toStringUtf8()+"\n";
                         System.out.print(log);
                     }
                 }
