@@ -9,6 +9,7 @@ import java.util.concurrent.CountDownLatch;
 
 import io.grpc.Server;
 import io.grpc.netty.NettyServerBuilder;
+import io.netty.channel.ChannelOption;
 
 public class LoadEntry {
 
@@ -25,7 +26,7 @@ public class LoadEntry {
                 try {
                     server = NettyServerBuilder
                             .forPort(port)
-                            .addService(new FridaGpcServiceImp(latch))
+                            .addService(new FridaGpcServiceImp(latch)).withChildOption(ChannelOption.SO_REUSEADDR, true)
                             .maxInboundMessageSize(Integer.MAX_VALUE)
                             .build()
                             .start();
