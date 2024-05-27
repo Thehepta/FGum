@@ -53,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
         bt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                LoadEntry.Entry(getApplicationContext(),"","");
+                LoadEntry.Entry(getApplicationContext(),getApplicationInfo().sourceDir,"");
             }
         });
         hook_bt.setOnClickListener(new View.OnClickListener() {

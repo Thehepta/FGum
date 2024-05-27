@@ -24,7 +24,6 @@ static GMainLoop *loop;
 
 
 ThreadSafeQueue threadSafeQueue;
-JavaVM* g_vm;
 
 static void on_message(const gchar *message, GBytes *data, gpointer user_data) {
 
@@ -94,11 +93,8 @@ void JNICALL frida_log(JNIEnv *env , jclass thiz) {
         }
     }
 }
-
-
 extern "C" JNIEXPORT
-void JNICALL StartFridaThread(JNIEnv *env , jclass thiz) {
-
+void JNICALL frida_start(JNIEnv *env , jclass thiz) {
     LOGD ("[*] frida entry");
     gum_init_embedded();
     backend = gum_script_backend_obtain_qjs();
@@ -112,8 +108,6 @@ void JNICALL StartFridaThread(JNIEnv *env , jclass thiz) {
     LOGE("frida end");    //会在前面个阻塞住，这个线程不会退出
 
 }
-
-
 
 int frida(jbyte* buffer) {
     LOGD ("[*] frida entry");
@@ -135,18 +129,17 @@ JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
     if (vm->GetEnv( (void**) &env, JNI_VERSION_1_6) != JNI_OK) {
         return -1;
     }
-    g_vm = vm;
     jclass LoadEntry = env->FindClass("com/test/fgum/LoadEntry");
     JNINativeMethod methods[]= {
             {"loadScript", "([B)V",(void*) loadScript},
             {"startWritingThread", "()V",(void*) frida_log},
-            {"StartFridaThread", "()V",(void*) StartFridaThread},
+            {"startFridaThread", "()V",(void*) frida_start},
     };
     env->RegisterNatives(LoadEntry, methods, sizeof(methods)/sizeof(JNINativeMethod));
 
-    pthread_t pthread_frida;
-    pthread_create(&pthread_frida, NULL, (void *(*)(void *)) (frida),(void *) nullptr);
-    pthread_detach(pthread_frida);
+//    pthread_t pthread_frida;
+//    pthread_create(&pthread_frida, NULL, (void *(*)(void *)) (frida),(void *) nullptr);
+//    pthread_detach(pthread_frida);
 
 
     return JNI_VERSION_1_6;

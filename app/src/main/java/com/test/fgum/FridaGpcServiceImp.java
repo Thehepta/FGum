@@ -11,7 +11,7 @@ import com.kone.pbdemo.protocol.FridaServiceGrpc;
 import com.kone.pbdemo.protocol.GrpcMessage;
 import com.kone.pbdemo.protocol.GrpcType;
 
-import java.nio.ByteBuffer;
+import java.util.concurrent.CountDownLatch;
 
 import io.grpc.stub.StreamObserver;
 
@@ -20,6 +20,7 @@ public class FridaGpcServiceImp extends FridaServiceGrpc.FridaServiceImplBase {
     private boolean stopReading;
 
     public static StreamObserver<GrpcMessage> pushResponseStreamObserver = null;
+    CountDownLatch latch;
     @Override
     public void loadJS(Filebuff request, StreamObserver<Empty> responseObserver) {
         byte [] js_buff = request.getContent().toByteArray();
@@ -28,20 +29,27 @@ public class FridaGpcServiceImp extends FridaServiceGrpc.FridaServiceImplBase {
         responseObserver.onNext(empty);
         responseObserver.onCompleted();
     }
-    public FridaGpcServiceImp(){
+    public FridaGpcServiceImp(CountDownLatch latch){
+        this.latch = latch;
         new Thread(){
             @Override
             public void run() {
-                Log.e("rzx","StartFridaThread");
 
                 LoadEntry.startWritingThread();
+            }
+        }.start();
+        new Thread(){
+            @Override
+            public void run() {
+
+                LoadEntry.startFridaThread();
             }
         }.start();
     }
 
     @Override
     public StreamObserver<GrpcMessage> subscribe(StreamObserver<GrpcMessage> responseObserver) {
-
+        latch.countDown();
         pushResponseStreamObserver = responseObserver;
 
         return  new StreamObserver<GrpcMessage>() {

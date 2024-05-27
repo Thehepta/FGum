@@ -15,8 +15,8 @@ import java.util.concurrent.TimeUnit;
 public class Main {
     public static void main(String[] args) {
 
-        String host = "192.168.0.102";      //remote android ip
-        int port = 9091;
+        String host = "192.168.0.100";      //remote android ip
+        int port = 9093;
         ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port).usePlaintext().maxInboundMessageSize(Integer.MAX_VALUE).build();
 
         FridaServiceGrpc.FridaServiceBlockingStub iServerInface = FridaServiceGrpc.newBlockingStub(channel);
