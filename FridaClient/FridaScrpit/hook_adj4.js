@@ -1,5 +1,5 @@
 
-var offset = 0xc2140
+var offset = 0xdc48
 
 function main(){
     Java.perform(function(){

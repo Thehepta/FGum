@@ -1,9 +1,10 @@
 package org.example;
 
-import com.kone.pbdemo.protocol.Empty;
-import com.kone.pbdemo.protocol.FridaClientGrpc;
-import com.kone.pbdemo.protocol.FridaServiceGrpc;
-import com.kone.pbdemo.protocol.StringArgument;
+
+import com.test.fgum.client.protocol.FridaClientGrpc;
+import com.test.fgum.service.protocol.FridaServiceGrpc;
+import com.test.fgum.type.Empty;
+import com.test.fgum.type.StringArgument;
 import io.grpc.ManagedChannel;
 import io.grpc.stub.StreamObserver;
 

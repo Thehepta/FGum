@@ -1,16 +1,22 @@
 package com.test.fgum;
 
 
+import android.util.ArrayMap;
 import android.util.Log;
 
 import com.google.protobuf.ByteString;
-import com.kone.pbdemo.protocol.Empty;
-import com.kone.pbdemo.protocol.Filebuff;
-import com.kone.pbdemo.protocol.FridaServiceGrpc;
+import com.test.fgum.service.protocol.FridaServiceGrpc;
+import com.test.fgum.type.Empty;
+import com.test.fgum.type.Filebuff;
+import com.test.fgum.type.GrpcMessage;
+import com.test.fgum.type.GrpcType;
+import com.test.fgum.type.Use;
+import com.test.fgum.type.UseType;
 
-import com.kone.pbdemo.protocol.GrpcMessage;
-import com.kone.pbdemo.protocol.GrpcType;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
 import io.grpc.stub.StreamObserver;
@@ -18,9 +24,9 @@ import io.grpc.stub.StreamObserver;
 public class FridaGpcServiceImp extends FridaServiceGrpc.FridaServiceImplBase {
 
     private boolean stopReading;
-
-    public static StreamObserver<GrpcMessage> pushResponseStreamObserver = null;
-    CountDownLatch latch;
+    //    public Map<Integer,>
+    public Map<Integer,StreamObserver<GrpcMessage>> publish_list = new ArrayMap<>();
+    public Map<Integer,StreamObserver<GrpcMessage>> subscribe_list = new ArrayMap<>();
     @Override
     public void loadJS(Filebuff request, StreamObserver<Empty> responseObserver) {
         byte [] js_buff = request.getContent().toByteArray();
@@ -29,47 +35,40 @@ public class FridaGpcServiceImp extends FridaServiceGrpc.FridaServiceImplBase {
         responseObserver.onNext(empty);
         responseObserver.onCompleted();
     }
-    public FridaGpcServiceImp(CountDownLatch latch){
-        this.latch = latch;
-        new Thread(){
-            @Override
-            public void run() {
+    public FridaGpcServiceImp(){
 
-                LoadEntry.startWritingThread();
-            }
-        }.start();
-        new Thread(){
-            @Override
-            public void run() {
-
-                LoadEntry.startFridaThread();
-            }
-        }.start();
+//        new Thread(){
+//            @Override
+//            public void run() {
+//
+//                LoadEntry.startWritingThread();
+//            }
+//        }.start();
+//        new Thread(){
+//            @Override
+//            public void run() {
+//
+//                LoadEntry.startFridaThread();
+//            }
+//        }.start();
     }
 
     @Override
     public StreamObserver<GrpcMessage> subscribe(StreamObserver<GrpcMessage> responseObserver) {
-        latch.countDown();
-        pushResponseStreamObserver = responseObserver;
+        Log.e("rzx","subscribe");
 
         return  new StreamObserver<GrpcMessage>() {
             @Override
             public void onNext(GrpcMessage request) {
-                // 处理客户端发送的请求
-                System.out.println("Received data from client: " + request.getType());
-                switch (request.getType()){
-                    case  file:{
-                        byte [] js_buff = request.getContent().toByteArray();
-                        LoadEntry.loadScript(js_buff);
-                    }
-                }
+                HandleSubscribeMsg(responseObserver,request);
+
             }
 
             @Override
             public void onError(Throwable t) {
                 // 处理流出现错误的情况
                 System.err.println("Error from client: " + t.getMessage());
-                pushResponseStreamObserver = null;
+                subscribe_list.remove(responseObserver);
 
             }
 
@@ -77,24 +76,105 @@ public class FridaGpcServiceImp extends FridaServiceGrpc.FridaServiceImplBase {
             public void onCompleted() {
                 // 客户端流结束时执行的操作
                 System.out.println("Client disconnected");
-                pushResponseStreamObserver = null;
+                subscribe_list.remove(responseObserver);
             }
         };
+    }
 
+    public void HandleSubscribeMsg(StreamObserver<GrpcMessage> responseObserver,GrpcMessage request){
+        // 处理客户端发送的请求
+        switch (request.getType()){
+            case  init: {
+                int id = request.getPid();
+                subscribe_list.put(id,responseObserver);
+                Log.e("rzx","HandleSubscribeMsg init");
+                break;
+            }
+            case  file:{
+                byte [] js_buff = request.getContent().toByteArray();
+                LoadEntry.loadScript(js_buff);
+            }
+            case  cmd: {
+            }
+            case  log: {
+            }
+
+        }
+    }
+
+    @Override
+    public void regist(Use request, StreamObserver<Empty> responseObserver) {
+        Log.e("rzx","regist:"+request.getId());
+        responseObserver.onNext(Empty.newBuilder().build());
+        responseObserver.onCompleted();
+    }
+
+    @Override
+    public StreamObserver<GrpcMessage> publishes(StreamObserver<GrpcMessage> responseObserver) {
+
+        return new StreamObserver<GrpcMessage>() {
+            @Override
+            public void onNext(GrpcMessage request) {
+                HandlePublishesMsg(responseObserver,request);
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                // 处理流出现错误的情况
+                System.err.println("Error from client: " + t.getMessage());
+
+
+            }
+
+            @Override
+            public void onCompleted() {
+                // 客户端流结束时执行的操作
+                System.out.println("Client disconnected");
+
+            }
+        };
+    }
+
+
+    public void HandlePublishesMsg(StreamObserver<GrpcMessage> responseObserver,GrpcMessage request){
+        // 处理客户端发送的请求
+
+        switch (request.getType()){
+            case  init: {
+                int pid = request.getPid();
+                publish_list.put(pid,responseObserver);
+                for ( int id :subscribe_list.keySet())
+                {
+                    subscribe_list.get(id).onNext(request);
+                }
+                Log.e("rzx","HandlePublishesMsg init");
+                break;
+            }
+            case  file:{
+                byte [] js_buff = request.getContent().toByteArray();
+                LoadEntry.loadScript(js_buff);
+            }
+            case  cmd: {
+            }
+            case  log: {
+            }
+        }
     }
 
 
     public static void sendlog(String log){
 
-        try {
-            if(pushResponseStreamObserver == null){
-                return;
-            }
-            GrpcMessage response = GrpcMessage.newBuilder().setContent(ByteString.copyFromUtf8(log)).setType(GrpcType.log).build();
-            pushResponseStreamObserver.onNext(response);
+//        try {
+//            if(pushResponseStreamObserver == null){
+//                return;
+//            }
+//            GrpcMessage response = GrpcMessage.newBuilder().setContent(ByteString.copyFromUtf8(log)).setType(GrpcType.log).setPid(android.os.Process.myPid()).build();
+//            pushResponseStreamObserver.onNext(response);
 
-        }catch (Exception e){
-            Log.i("sendlog","sendlog exception");
-        }
+//        }catch (Exception e){
+//            Log.i("sendlog","sendlog exception");
+//        }
+
+        return;
     }
 }

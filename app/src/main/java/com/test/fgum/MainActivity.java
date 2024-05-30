@@ -2,6 +2,7 @@ package com.test.fgum;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
@@ -53,7 +54,9 @@ public class MainActivity extends AppCompatActivity {
         bt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                LoadEntry.Entry(getApplicationContext(),getApplicationInfo().sourceDir,"");
+                // 启动 KeepAliveService
+                Intent intent = new Intent(MainActivity.this, KeepAliveService.class);
+                startService(intent);
             }
         });
         hook_bt.setOnClickListener(new View.OnClickListener() {

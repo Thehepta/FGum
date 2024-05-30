@@ -75,7 +75,7 @@ on_message (const gchar * message,
   json_parser_load_from_data (parser, message, -1, NULL);
   root = json_node_get_object (json_parser_get_root (parser));
 
-  type = json_object_get_string_member (root, "type");
+  type = json_object_get_string_member (root, "type.proto");
   if (strcmp (type, "log") == 0)
   {
     const gchar * log_message;

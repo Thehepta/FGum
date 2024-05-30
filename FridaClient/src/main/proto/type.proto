@@ -3,32 +3,34 @@ package protocol;
 
 option go_package = "protocol";
 option java_multiple_files = true;
-option java_package = "com.kone.pbdemo.protocol";
+option java_package = "com.test.fgum.type";
+
+
+
 
 enum GrpcType {
-  log = 0;
+  init = 0;
   file = 1;
   cmd = 2;
-  unknow = 3;
+  log = 3;
 }
-
-service FridaService {
-  rpc LoadJS (Filebuff) returns (Empty) {}
-  rpc Subscribe(stream GrpcMessage) returns (stream GrpcMessage);
-
-}
-
-service FridaClient {
-  rpc on_message(StringArgument) returns (Empty) {}
-
-}
-
 
 message StringArgument {
   string data = 1;
 }
 
+enum UseType{
+  process = 0;
+  observer = 1;
+}
+
+message Use {
+  UseType userType = 1;
+  int32 id = 2;
+}
+
 message GrpcMessage {
+  int32 pid = 3;
   GrpcType type = 1;
   bytes Content = 2;
 }
@@ -43,4 +45,3 @@ message Filebuff {
 //}
 
 message Empty {}
-

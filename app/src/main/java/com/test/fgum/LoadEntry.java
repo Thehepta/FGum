@@ -1,52 +1,77 @@
 package com.test.fgum;
 
+
 import android.content.Context;
 import android.util.Log;
+
+import com.test.fgum.service.protocol.FridaServiceGrpc;
+import com.test.fgum.type.Empty;
+import com.test.fgum.type.Use;
+import com.test.fgum.type.UseType;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.concurrent.CountDownLatch;
 
+import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
 import io.grpc.Server;
 import io.grpc.netty.NettyServerBuilder;
-import io.netty.channel.ChannelOption;
+
 
 public class LoadEntry {
 
     static FridaGpcServiceImp fridaGpcServiceImp;
+    static int port ;
     public static void Entry(Context context, String source, String argument){
         PreLoadNativeSO(context,source);
+        port = 9903;
         CountDownLatch latch = new CountDownLatch(1);
-
-        Thread thread = new Thread(){
+        new Thread(){
             @Override
             public void run() {
-                int port = 9093;
-                Server server = null;
-                try {
-                    server = NettyServerBuilder
-                            .forPort(port)
-                            .addService(new FridaGpcServiceImp(latch)).withChildOption(ChannelOption.SO_REUSEADDR, true)
-                            .maxInboundMessageSize(Integer.MAX_VALUE)
-                            .build()
-                            .start();
-                    Log.e("LoadEntry","server started, port : " + port);
-                    server.awaitTermination();
+                startServer();
 
-                } catch (IOException | InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
             }
-        };
-        thread.start();
+        }.start();
+
+        new Thread(){
+            @Override
+            public void run() {
+                ProcessGrpcClient processGrpcClient = new ProcessGrpcClient();
+                processGrpcClient.startClient(port);
+                latch.countDown();
+
+            }
+        }.start();
+
         try {
             latch.await();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-
-
     }
+
+    private static void
+    startServer() {
+
+        Server server = null;
+        try {
+            server = NettyServerBuilder
+                    .forPort(port)
+                    .addService(new FridaGpcServiceImp())
+                    .maxInboundMessageSize(Integer.MAX_VALUE)
+                    .build()
+                    .start();
+            Log.e("LoadEntry","server started, port : " + port);
+            server.awaitTermination();
+        } catch (IOException | InterruptedException e) {
+
+        }
+    }
+
+
+
     public static void PreLoadNativeSO(Context context, String source) {
         try {
             String abi= "arm64-v8a";
