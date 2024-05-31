@@ -96,8 +96,8 @@ public class LoadEntry {
 
 
     public static boolean sendlog(String log){
-        ProcessGrpcClient.sendlog(log);
-        return true;
+
+        return ProcessGrpcClient.sendlog(log);
     }
 
 

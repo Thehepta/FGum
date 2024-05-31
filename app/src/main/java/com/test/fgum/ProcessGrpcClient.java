@@ -30,13 +30,13 @@ public class ProcessGrpcClient  {
                 LoadEntry.startWritingThread();
             }
         }.start();
-        new Thread(){
-            @Override
-            public void run() {
-
-                LoadEntry.startFridaThread();
-            }
-        }.start();
+//        new Thread(){
+//            @Override
+//            public void run() {
+//
+//                LoadEntry.startFridaThread();
+//            }
+//        }.start();
     }
 
 
@@ -55,11 +55,13 @@ public class ProcessGrpcClient  {
 
                     @Override
                     public void onError(Throwable t) {
+                        Log.e("Rzx","ProcessGrpcClient onError");
                         requestStreamObserver = null;
                     }
 
                     @Override
                     public void onCompleted() {
+                        Log.e("Rzx","ProcessGrpcClient onCompleted");
                         requestStreamObserver = null;
                     }
                 });
@@ -83,9 +85,6 @@ public class ProcessGrpcClient  {
                 Log.e("Rzx","startClient Failed");
             }
         }
-
-
-
     }
 
 
@@ -97,8 +96,15 @@ public class ProcessGrpcClient  {
                 break;
             }
             case  file:{
-                byte [] js_buff = request.getContent().toByteArray();
-                LoadEntry.loadScript(js_buff);
+                Log.e("Rzx","ProcessGrpcClient load script");
+                new Thread(){
+                    @Override
+                    public void run() {
+                        byte [] js_buff = request.getContent().toByteArray();
+                        LoadEntry.loadScript(js_buff);
+                    }
+                }.start();
+
             }
             case  cmd: {
             }
@@ -108,18 +114,16 @@ public class ProcessGrpcClient  {
         }
     }
 
-    public static void sendlog(String log){
+    public static boolean sendlog(String log){
 
         try {
-            if(requestStreamObserver == null){
-                return;
-            }
+
             GrpcMessage response = GrpcMessage.newBuilder().setContent(ByteString.copyFromUtf8(log)).setType(GrpcType.log).setPid(android.os.Process.myPid()).build();
             requestStreamObserver.onNext(response);
 
         }catch (Exception e){
             Log.i("sendlog","sendlog exception");
         }
-
+        return true;
     }
 }

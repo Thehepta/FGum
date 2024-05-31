@@ -37,7 +37,7 @@ public class Main {
                         break;
                     }
                     case  log:{
-                        String log = response.getContent().toStringUtf8()+"\n";
+                        String log = response.getContent().toStringUtf8();
                         System.out.print(log+"\n");
                     }
                 }

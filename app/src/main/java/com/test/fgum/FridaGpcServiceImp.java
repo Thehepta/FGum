@@ -59,6 +59,7 @@ public class FridaGpcServiceImp extends FridaServiceGrpc.FridaServiceImplBase {
             public void onError(Throwable t) {
                 // 处理流出现错误的情况
                 subscribe_list.remove(responseObserver);
+                Log.e("rzx","subscribe onCompleted");
 
             }
 
@@ -66,6 +67,7 @@ public class FridaGpcServiceImp extends FridaServiceGrpc.FridaServiceImplBase {
             public void onCompleted() {
                 // 客户端流结束时执行的操作
                 subscribe_list.remove(responseObserver);
+                Log.e("rzx","subscribe onCompleted");
             }
         };
     }
@@ -109,22 +111,28 @@ public class FridaGpcServiceImp extends FridaServiceGrpc.FridaServiceImplBase {
         // 处理客户端发送的请求
         switch (request.getType()){
             case  init: {
+                Log.e("rzx","HandleSubscribeMsg init");
                 //订阅者，客户端注册
                 int id = request.getPid();
                 subscribe_list.put(id,responseObserver);
                 break;
             }
             case  file:{
+                Log.e("rzx","HandleSubscribeMsg file");
+
                 //接受订阅者传输过来的文件，将他转发给每一个出版社（进程）
                 if(current_js_buff == null){
                     current_js_buff = request.getContent().toByteArray();
                     break;
                 }
                 current_js_buff = request.getContent().toByteArray();
-                GrpcMessage grpcMessage = GrpcMessage.newBuilder().setContent(ByteString.copyFrom(current_js_buff)).build();
+                GrpcMessage.Builder grpcMessage_build = GrpcMessage.newBuilder();
+                grpcMessage_build.setType(GrpcType.file);
+                grpcMessage_build.setContent(ByteString.copyFrom(current_js_buff));
+                grpcMessage_build.setStatus(GrpcStatus.successful);
                 for ( int id :publish_list.keySet())
                 {
-                    publish_list.get(id).onNext(grpcMessage);
+                    publish_list.get(id).onNext(grpcMessage_build.build());
                 }
 
             }
@@ -150,10 +158,16 @@ public class FridaGpcServiceImp extends FridaServiceGrpc.FridaServiceImplBase {
             case  cmd: {
             }
             case  log: {
+                Log.e("rzx","HandlePublishesMsg log");
                 //将日志发送给每个订阅者
                 for ( int id :subscribe_list.keySet())
                 {
-                    subscribe_list.get(id).onNext(PublishesMsg);
+                    try {
+                        subscribe_list.get(id).onNext(PublishesMsg);
+                    }catch (Exception e){
+                        subscribe_list.remove(id);
+                    }
+
                 }
             }
         }

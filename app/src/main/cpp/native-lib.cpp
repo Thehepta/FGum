@@ -8,7 +8,7 @@
 #include <thread>
 #include <condition_variable>
 #include <chrono>
-
+#include "frida-gumjs.h"
 #include "logging.h"
 #include "native-lib.h"
 #include "ThreadSafeQueue.h"
@@ -34,7 +34,7 @@ static void on_message(const gchar *message, GBytes *data, gpointer user_data) {
     json_parser_load_from_data(parser, message, -1, NULL);
     root = json_node_get_object(json_parser_get_root(parser));
 
-    type = json_object_get_string_member(root, "type.proto");
+    type = json_object_get_string_member(root, "type");
     if (strcmp(type, "log") == 0) {
         const gchar *log_message;
         log_message = json_object_get_string_member(root, "payload");
@@ -53,8 +53,9 @@ static void on_message(const gchar *message, GBytes *data, gpointer user_data) {
 extern "C"
 JNIEXPORT void JNICALL loadScript(JNIEnv *env, jclass thiz, jbyteArray js_buff) {
     // TODO: implement loadbuff()
-    LOGD ("[*] %s ", "loadScript");
+    LOGD ("[*] %s ", "loadScript1");
     jbyte* buffer = env->GetByteArrayElements(js_buff, NULL);
+
     GError * err = NULL;
 
     if (script != NULL)
@@ -87,7 +88,7 @@ void JNICALL frida_log(JNIEnv *env , jclass thiz) {
         bool empty = threadSafeQueue.try_dequeue(msg);
         if(empty){
             jstring jmsg = env->NewStringUTF(msg.c_str());
-            env->CallStaticBooleanMethod(LoadEntry,jsendlog,jmsg);
+            jboolean  is_send = env->CallStaticBooleanMethod(LoadEntry,jsendlog,jmsg);
         } else{
 
         }
@@ -137,9 +138,9 @@ JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
     };
     env->RegisterNatives(LoadEntry, methods, sizeof(methods)/sizeof(JNINativeMethod));
 
-//    pthread_t pthread_frida;
-//    pthread_create(&pthread_frida, NULL, (void *(*)(void *)) (frida),(void *) nullptr);
-//    pthread_detach(pthread_frida);
+    pthread_t pthread_frida;
+    pthread_create(&pthread_frida, NULL, (void *(*)(void *)) (frida),(void *) nullptr);
+    pthread_detach(pthread_frida);
 
 
     return JNI_VERSION_1_6;
