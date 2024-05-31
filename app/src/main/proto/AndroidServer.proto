@@ -9,16 +9,12 @@ option java_package = "com.test.fgum.service.protocol";
 
 
 service FridaService {
-    rpc LoadJS (Filebuff) returns (Empty) {}
+    rpc getCurJScript (Empty) returns (GrpcMessage) {}
     rpc isServerStart (Empty) returns (Empty) {}
     rpc Regist(Use) returns (Empty);
     rpc Subscribe(stream GrpcMessage) returns (stream GrpcMessage);
     rpc publishes(stream GrpcMessage) returns (stream GrpcMessage);
 
-}
-
-service AppProcessClient {
-    rpc LoadJS (Filebuff) returns (Empty) {}
 }
 
 

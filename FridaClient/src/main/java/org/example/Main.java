@@ -38,7 +38,7 @@ public class Main {
                     }
                     case  log:{
                         String log = response.getContent().toStringUtf8()+"\n";
-                        System.out.print(log);
+                        System.out.print(log+"\n");
                     }
                 }
             }
@@ -56,15 +56,15 @@ public class Main {
         requestStreamObserver.onNext(GrpcMessage.newBuilder().setType(GrpcType.init).setPid(UUID.randomUUID().variant()).build());
 //        用requestStreamObserver 
 
-//        String filePath = "D:\\Project\\git\\FGum\\FridaClient\\FridaScrpit\\hook.js";
-//        try {
-//            byte[] js_byte = Files.readAllBytes(Paths.get(filePath));
-//            GrpcMessage file =  GrpcMessage.newBuilder().setType(GrpcType.file).setContent(ByteString.copyFrom(js_byte)).build();
-//            requestStreamObserver.onNext(file);
-//
-//        } catch (IOException e) {
-//            throw new RuntimeException(e);
-//        }
+        String filePath = "D:\\Project\\git\\FGum\\FridaClient\\FridaScrpit\\hook.js";
+        try {
+            byte[] js_byte = Files.readAllBytes(Paths.get(filePath));
+            GrpcMessage file =  GrpcMessage.newBuilder().setType(GrpcType.file).setContent(ByteString.copyFrom(js_byte)).build();
+            requestStreamObserver.onNext(file);
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
         CountDownLatch latch = new CountDownLatch(1);
 

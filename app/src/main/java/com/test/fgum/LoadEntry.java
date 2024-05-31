@@ -21,7 +21,6 @@ import io.grpc.netty.NettyServerBuilder;
 
 public class LoadEntry {
 
-    static FridaGpcServiceImp fridaGpcServiceImp;
     static int port ;
     public static void Entry(Context context, String source, String argument){
         PreLoadNativeSO(context,source);
@@ -41,7 +40,6 @@ public class LoadEntry {
                 ProcessGrpcClient processGrpcClient = new ProcessGrpcClient();
                 processGrpcClient.startClient(port);
                 latch.countDown();
-
             }
         }.start();
 
@@ -98,7 +96,7 @@ public class LoadEntry {
 
 
     public static boolean sendlog(String log){
-        FridaGpcServiceImp.sendlog(log);
+        ProcessGrpcClient.sendlog(log);
         return true;
     }
 

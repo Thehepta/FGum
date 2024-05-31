@@ -53,6 +53,7 @@ static void on_message(const gchar *message, GBytes *data, gpointer user_data) {
 extern "C"
 JNIEXPORT void JNICALL loadScript(JNIEnv *env, jclass thiz, jbyteArray js_buff) {
     // TODO: implement loadbuff()
+    LOGD ("[*] %s ", "loadScript");
     jbyte* buffer = env->GetByteArrayElements(js_buff, NULL);
     GError * err = NULL;
 
@@ -75,7 +76,6 @@ JNIEXPORT void JNICALL loadScript(JNIEnv *env, jclass thiz, jbyteArray js_buff) 
     env->ReleaseByteArrayElements(js_buff, buffer, 0);
 
 }
-#include <future>
 
 extern "C" JNIEXPORT
 void JNICALL frida_log(JNIEnv *env , jclass thiz) {
