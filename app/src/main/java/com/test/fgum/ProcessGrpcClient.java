@@ -97,10 +97,11 @@ public class ProcessGrpcClient  {
             }
             case  file:{
                 Log.e("Rzx","ProcessGrpcClient load script");
+                byte [] js_buff = request.getContent().toByteArray();
+
                 new Thread(){
                     @Override
                     public void run() {
-                        byte [] js_buff = request.getContent().toByteArray();
                         LoadEntry.loadScript(js_buff);
                     }
                 }.start();

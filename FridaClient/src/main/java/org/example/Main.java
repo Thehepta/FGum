@@ -4,6 +4,7 @@ import com.google.protobuf.ByteString;
 
 import com.test.fgum.service.protocol.FridaServiceGrpc;
 import com.test.fgum.type.GrpcMessage;
+import com.test.fgum.type.GrpcStatus;
 import com.test.fgum.type.GrpcType;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
@@ -19,7 +20,7 @@ import java.util.concurrent.TimeUnit;
 public class Main {
     public static void main(String[] args) {
 
-        String host = "192.168.0.79";      //remote android ip
+        String host = "192.168.18.125";      //remote android ip
         int port = 9903;
         ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port).usePlaintext().maxInboundMessageSize(Integer.MAX_VALUE).build();
 
@@ -56,11 +57,14 @@ public class Main {
         requestStreamObserver.onNext(GrpcMessage.newBuilder().setType(GrpcType.init).setPid(UUID.randomUUID().variant()).build());
 //        用requestStreamObserver 
 
-        String filePath = "D:\\Project\\git\\FGum\\FridaClient\\FridaScrpit\\hook.js";
+        String filePath = "D:\\git\\FGum\\FridaClient\\FridaScrpit\\hook.js";
         try {
-            byte[] js_byte = Files.readAllBytes(Paths.get(filePath));
-            GrpcMessage file =  GrpcMessage.newBuilder().setType(GrpcType.file).setContent(ByteString.copyFrom(js_byte)).build();
-            requestStreamObserver.onNext(file);
+            String  js_script = Files.readString(Paths.get(filePath));
+            GrpcMessage.Builder grpcMessage_build = GrpcMessage.newBuilder();
+            grpcMessage_build.setType(GrpcType.file);
+            grpcMessage_build.setContent(ByteString.copyFromUtf8(js_script));
+            grpcMessage_build.setStatus(GrpcStatus.successful);
+            requestStreamObserver.onNext(grpcMessage_build.build());
 
         } catch (IOException e) {
             throw new RuntimeException(e);

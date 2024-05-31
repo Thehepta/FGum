@@ -87,6 +87,7 @@ public class FridaGpcServiceImp extends FridaServiceGrpc.FridaServiceImplBase {
         return new StreamObserver<GrpcMessage>() {
             @Override
             public void onNext(GrpcMessage request) {
+
                 HandlePublishesMsg(responseObserver,request);
             }
 
@@ -149,7 +150,7 @@ public class FridaGpcServiceImp extends FridaServiceGrpc.FridaServiceImplBase {
                 {
                     subscribe_list.get(id).onNext(PublishesMsg);
                 }
-                Log.e("rzx","HandlePublishesMsg init");
+                Log.e("rzx","HandlePublishesMsg init:"+pid);
                 break;
             }
             case  file:{

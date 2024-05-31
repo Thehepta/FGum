@@ -33,10 +33,12 @@ message Use {
 }
 
 message GrpcMessage {
-  GrpcStatus status = 4;
-  int32 pid = 3;
   GrpcType type = 1;
   bytes Content = 2;
+  int32 pid = 3;
+  GrpcStatus status = 4;
+
+
 }
 
 message Filebuff {
