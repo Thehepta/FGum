@@ -14,7 +14,10 @@ enum GrpcType {
   cmd = 2;
   log = 3;
 }
-
+enum GrpcStatus {
+  successful = 0;
+  failed = -1;
+}
 message StringArgument {
   string data = 1;
 }
@@ -30,6 +33,7 @@ message Use {
 }
 
 message GrpcMessage {
+  GrpcStatus status = 4;
   int32 pid = 3;
   GrpcType type = 1;
   bytes Content = 2;
