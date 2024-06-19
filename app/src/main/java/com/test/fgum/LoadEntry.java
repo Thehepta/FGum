@@ -26,13 +26,13 @@ public class LoadEntry {
         PreLoadNativeSO(context,source);
         port = 9903;
         CountDownLatch latch = new CountDownLatch(1);
-        new Thread(){
-            @Override
-            public void run() {
-                startServer();
-
-            }
-        }.start();
+//        new Thread(){
+//            @Override
+//            public void run() {
+//                startServer();
+//
+//            }
+//        }.start();
 
         new Thread(){
             @Override
