@@ -4,7 +4,7 @@ plugins {
 
 }
 
-group = 'org.frida'
+group = 'org.fgum'
 version = '1.0-SNAPSHOT'
 
 repositories {

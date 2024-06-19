@@ -1,14 +1,15 @@
-package org.example;
+package org.fgum;
 
+import com.fgum.type.GrpcMessage;
+import com.fgum.type.GrpcStatus;
+import com.fgum.type.GrpcType;
 import com.google.protobuf.ByteString;
 
-import com.test.fgum.service.protocol.FridaServiceGrpc;
-import com.test.fgum.type.GrpcMessage;
-import com.test.fgum.type.GrpcStatus;
-import com.test.fgum.type.GrpcType;
+
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.stub.StreamObserver;
+import org.fgum.service.protocol.FgumServiceGrpc;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -17,18 +18,18 @@ import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-public class Main {
+public class FgumClientMain {
     public static void main(String[] args) {
 
-        String host = "192.168.18.125";      //remote android ip
-        int port = 9903;
+        String host = "127.0.0.1";      //remote android ip
+        int port = 9091;
         ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port).usePlaintext().maxInboundMessageSize(Integer.MAX_VALUE).build();
 
-        FridaServiceGrpc.FridaServiceBlockingStub iServerInface = FridaServiceGrpc.newBlockingStub(channel);
+//        FgumServiceGrpc.FgumServiceBlockingStub iServerInface = FgumServiceGrpc.newBlockingStub(channel);
 
-        FridaServiceGrpc.FridaServiceStub stub = FridaServiceGrpc.newStub(channel);
+        FgumServiceGrpc.FgumServiceStub stub = FgumServiceGrpc.newStub(channel);
 
-        StreamObserver<GrpcMessage> requestStreamObserver = stub.subscribe( new StreamObserver<GrpcMessage>() {
+        StreamObserver<GrpcMessage> requestStreamObserver = stub.subscribe(new StreamObserver<GrpcMessage>() {
 
             @Override
             public void onNext(GrpcMessage response) {
