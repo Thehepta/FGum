@@ -25,24 +25,16 @@ public class LoadEntry {
     public static void Entry(Context context, String source, String argument){
         PreLoadNativeSO(context,source);
         port = 9903;
+        String host = "127.0.0.7";  //remote android ip
         CountDownLatch latch = new CountDownLatch(1);
-//        new Thread(){
-//            @Override
-//            public void run() {
-//                startServer();
-//
-//            }
-//        }.start();
-
         new Thread(){
             @Override
             public void run() {
                 ProcessGrpcClient processGrpcClient = new ProcessGrpcClient();
-                processGrpcClient.startClient(port);
+                processGrpcClient.startClient(host, port);
                 latch.countDown();
             }
         }.start();
-
         try {
             latch.await();
         } catch (InterruptedException e) {
@@ -51,8 +43,7 @@ public class LoadEntry {
     }
 
     private static void
-    startServer() {
-
+    startServer() {  //grpc 中专server，目前分离开来，不在客户端使用
         Server server = null;
         try {
             server = NettyServerBuilder
@@ -84,19 +75,12 @@ public class LoadEntry {
     }
 
 
-//    static {
-//        System.loadLibrary("fgum");
-//
-//    }
-
-
     public static native void loadScript(byte[] js_buff);
     public static native void startWritingThread();
     public static native void startFridaThread();
 
 
     public static boolean sendlog(String log){
-
         return ProcessGrpcClient.sendlog(log);
     }
 

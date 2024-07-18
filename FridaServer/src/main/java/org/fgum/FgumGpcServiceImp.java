@@ -108,7 +108,6 @@ public class FgumGpcServiceImp extends FgumServiceGrpc.FgumServiceImplBase {
             }
             case  file:{
 //                Log.e("rzx","HandleSubscribeMsg file");
-
                 //接受订阅者传输过来的文件，将他转发给每一个出版社（进程）
                 if(current_js_buff == null){
                     current_js_buff = request.getContent().toByteArray();

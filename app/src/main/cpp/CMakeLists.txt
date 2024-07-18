@@ -10,7 +10,7 @@ cmake_minimum_required(VERSION 3.22.1)
 project("fgum")
 
 add_library(gumjs STATIC IMPORTED)
-set_target_properties(gumjs PROPERTIES IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/libfrida-gumjs.a)
+set_target_properties(gumjs PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/libs/${ANDROID_ABI}/libfrida-gumjs.a)
 
 # Creates and names a library, sets it as either STATIC
 # or SHARED, and provides the relative paths to its source code.

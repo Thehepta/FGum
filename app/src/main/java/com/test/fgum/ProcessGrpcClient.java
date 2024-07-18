@@ -30,21 +30,13 @@ public class ProcessGrpcClient  {
                 LoadEntry.startWritingThread();
             }
         }.start();
-//        new Thread(){
-//            @Override
-//            public void run() {
-//
-//                LoadEntry.startFridaThread();
-//            }
-//        }.start();
     }
 
 
-    void startClient(int port) {
+    void startClient(String host,int port) {
         StreamObserver<GrpcMessage> tmp_requestStreamObserver;
         while (true){
             try {
-                String host = "127.0.0.1";      //remote android ip
                 ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port).usePlaintext().maxInboundMessageSize(Integer.MAX_VALUE).build();
                 FridaServiceGrpc.FridaServiceStub stub = FridaServiceGrpc.newStub(channel);
                 tmp_requestStreamObserver = stub.publishes(new StreamObserver<GrpcMessage>() {
