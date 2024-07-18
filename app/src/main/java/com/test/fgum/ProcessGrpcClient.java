@@ -4,13 +4,14 @@ import android.os.Process;
 import android.util.Log;
 
 import com.google.protobuf.ByteString;
-import com.test.fgum.service.protocol.FridaServiceGrpc;
-import com.test.fgum.type.Empty;
-import com.test.fgum.type.Filebuff;
-import com.test.fgum.type.GrpcMessage;
-import com.test.fgum.type.GrpcStatus;
-import com.test.fgum.type.GrpcType;
+import com.fgum.type.Empty;
+import com.fgum.type.Filebuff;
+import com.fgum.type.GrpcMessage;
+import com.fgum.type.GrpcStatus;
+import com.fgum.type.GrpcType;
 
+
+import org.fgum.service.protocol.FgumServiceGrpc;
 
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
@@ -23,11 +24,11 @@ public class ProcessGrpcClient  {
 
 
     ProcessGrpcClient(){
+        //单独开一个线程读取日志
         new Thread(){
             @Override
             public void run() {
-
-                LoadEntry.startWritingThread();
+                LoadEntry.startLogThread();
             }
         }.start();
     }
@@ -38,7 +39,7 @@ public class ProcessGrpcClient  {
         while (true){
             try {
                 ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port).usePlaintext().maxInboundMessageSize(Integer.MAX_VALUE).build();
-                FridaServiceGrpc.FridaServiceStub stub = FridaServiceGrpc.newStub(channel);
+                FgumServiceGrpc.FgumServiceStub stub = FgumServiceGrpc.newStub(channel);
                 tmp_requestStreamObserver = stub.publishes(new StreamObserver<GrpcMessage>() {
                     @Override
                     public void onNext(GrpcMessage value) {
@@ -61,7 +62,7 @@ public class ProcessGrpcClient  {
                 requestStreamObserver = tmp_requestStreamObserver;
                 while (true) {
                     try {
-                        FridaServiceGrpc.FridaServiceBlockingStub iServerInface = FridaServiceGrpc.newBlockingStub(channel);
+                        FgumServiceGrpc.FgumServiceBlockingStub iServerInface = FgumServiceGrpc.newBlockingStub(channel);
                         GrpcMessage grpcMessage = iServerInface.getCurJScript(Empty.newBuilder().build());
                         if(grpcMessage.getStatus() == GrpcStatus.failed){
                             continue;

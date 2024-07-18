@@ -7,7 +7,7 @@ import java.io.IOException;
 
 public class FgumServiceMain {
     public static void main(String[] args) throws InterruptedException, IOException {
-        int port = 9091;
+        int port = 9903;
         Server server = ServerBuilder
                 .forPort(port)
                 .addService(new FgumGpcServiceImp())

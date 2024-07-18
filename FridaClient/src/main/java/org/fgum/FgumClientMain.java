@@ -22,7 +22,7 @@ public class FgumClientMain {
     public static void main(String[] args) {
 
         String host = "127.0.0.1";      //remote android ip
-        int port = 9091;
+        int port = 9903;
         ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port).usePlaintext().maxInboundMessageSize(Integer.MAX_VALUE).build();
 
 //        FgumServiceGrpc.FgumServiceBlockingStub iServerInface = FgumServiceGrpc.newBlockingStub(channel);

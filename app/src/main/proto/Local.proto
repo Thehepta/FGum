@@ -3,12 +3,12 @@ package protocol;
 import  "type.proto";
 option go_package = "protocol";
 option java_multiple_files = true;
-option java_package = "com.test.fgum.client.protocol";
+option java_package = "com.fgum.client.protocol";
 
 
 
 
-service FridaClient {
+service FgumClient {
     rpc on_message(StringArgument) returns (Empty) {}
 
 }

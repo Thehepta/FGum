@@ -4,10 +4,9 @@ package com.test.fgum;
 import android.content.Context;
 import android.util.Log;
 
-import com.test.fgum.service.protocol.FridaServiceGrpc;
-import com.test.fgum.type.Empty;
-import com.test.fgum.type.Use;
-import com.test.fgum.type.UseType;
+import com.fgum.type.Empty;
+import com.fgum.type.Use;
+import com.fgum.type.UseType;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -24,22 +23,24 @@ public class LoadEntry {
     static int port ;
     public static void Entry(Context context, String source, String argument){
         PreLoadNativeSO(context,source);
+        String host = "192.168.12.104";  //remote android ip
         port = 9903;
-        String host = "127.0.0.7";  //remote android ip
+        Log.e("LoadEntry","client:" +host+" ip: " + port);
         CountDownLatch latch = new CountDownLatch(1);
+        //不能在主线程中加载frida，单开一个线程加载，主线程等待加载完成
         new Thread(){
             @Override
             public void run() {
                 ProcessGrpcClient processGrpcClient = new ProcessGrpcClient();
                 processGrpcClient.startClient(host, port);
-                latch.countDown();
+//                latch.countDown();
             }
         }.start();
-        try {
-            latch.await();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+//        try {
+//            latch.await();
+//        } catch (InterruptedException e) {
+//            throw new RuntimeException(e);
+//        }
     }
 
     private static void
@@ -76,7 +77,7 @@ public class LoadEntry {
 
 
     public static native void loadScript(byte[] js_buff);
-    public static native void startWritingThread();
+    public static native void startLogThread();
     public static native void startFridaThread();
 
 

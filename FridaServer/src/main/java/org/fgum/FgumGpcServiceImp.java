@@ -34,20 +34,20 @@ public class FgumGpcServiceImp extends FgumServiceGrpc.FgumServiceImplBase {
     //和订阅者的双向流，参数是订阅这的流，返回的是我们给订阅者的流
     @Override
     public StreamObserver<GrpcMessage> subscribe(StreamObserver<GrpcMessage> responseObserver) {
-                System.out.println("subscribe");
+        System.out.println("PC subscribe");
 
         return  new StreamObserver<GrpcMessage>() {
             @Override
             public void onNext(GrpcMessage request) {
-                System.out.println("subscribe");
-//                HandleSubscribeMsg(responseObserver,request);
+                System.out.println("PC subscribe onNext");
+                HandleSubscribeMsg(responseObserver,request);
             }
 
             @Override
             public void onError(Throwable t) {
                 // 处理流出现错误的情况
                 subscribe_list.remove(responseObserver);
-//                Log.e("rzx","subscribe onCompleted");
+                System.out.println("subscribe onError");
 
             }
 
@@ -55,7 +55,7 @@ public class FgumGpcServiceImp extends FgumServiceGrpc.FgumServiceImplBase {
             public void onCompleted() {
                 // 客户端流结束时执行的操作
                 subscribe_list.remove(responseObserver);
-//                Log.e("rzx","subscribe onCompleted");
+                 System.out.println("subscribe onCompleted");
             }
         };
     }
@@ -71,11 +71,11 @@ public class FgumGpcServiceImp extends FgumServiceGrpc.FgumServiceImplBase {
 
     @Override
     public StreamObserver<GrpcMessage> publishes(StreamObserver<GrpcMessage> responseObserver) {
-
+        System.out.println("Android publishes");
         return new StreamObserver<GrpcMessage>() {
             @Override
             public void onNext(GrpcMessage request) {
-
+                System.out.println("Android publishes onNext");
                 HandlePublishesMsg(responseObserver,request);
             }
 

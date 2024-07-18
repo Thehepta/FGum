@@ -5,15 +5,16 @@ import android.util.ArrayMap;
 import android.util.Log;
 
 import com.google.protobuf.ByteString;
-import com.test.fgum.service.protocol.FridaServiceGrpc;
-import com.test.fgum.type.Empty;
-import com.test.fgum.type.Filebuff;
-import com.test.fgum.type.GrpcMessage;
-import com.test.fgum.type.GrpcStatus;
-import com.test.fgum.type.GrpcType;
-import com.test.fgum.type.Use;
-import com.test.fgum.type.UseType;
+import com.fgum.type.Empty;
+import com.fgum.type.Filebuff;
+import com.fgum.type.GrpcMessage;
+import com.fgum.type.GrpcStatus;
+import com.fgum.type.GrpcType;
+import com.fgum.type.Use;
+import com.fgum.type.UseType;
 
+
+import org.fgum.service.protocol.FgumServiceGrpc;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +23,7 @@ import java.util.concurrent.CountDownLatch;
 
 import io.grpc.stub.StreamObserver;
 
-public class FridaGpcServiceImp extends FridaServiceGrpc.FridaServiceImplBase {
+public class FridaGpcServiceImp extends FgumServiceGrpc.FgumServiceImplBase {
 
     private boolean stopReading;
     //    public Map<Integer,>

@@ -133,7 +133,7 @@ JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
     jclass LoadEntry = env->FindClass("com/test/fgum/LoadEntry");
     JNINativeMethod methods[]= {
             {"loadScript", "([B)V",(void*) loadScript},
-            {"startWritingThread", "()V",(void*) frida_log},
+            {"startLogThread", "()V",(void*) frida_log},
             {"startFridaThread", "()V",(void*) frida_start},
     };
     env->RegisterNatives(LoadEntry, methods, sizeof(methods)/sizeof(JNINativeMethod));
